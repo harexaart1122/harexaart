@@ -1755,6 +1755,39 @@ class _MonitoringPageState extends State<MonitoringPage> {
     } catch (_) {}
   }
 
+  void _unlockMobileSpeech() {
+    final synthesis = html.window.speechSynthesis;
+    if (synthesis == null) return;
+
+    try {
+      // Mobile Chrome/Safari can block speech until the browser receives a
+      // direct user gesture. This short announcement is triggered only by
+      // the Voice button, so the existing realtime voice queue remains
+      // unchanged and desktop behavior stays the same.
+      synthesis.cancel();
+
+      final unlockUtterance = html.SpeechSynthesisUtterance(
+        'Voice monitor aktif.',
+      )
+        ..lang = 'id-ID'
+        ..rate = 1.0
+        ..pitch = 1.0
+        ..volume = 1.0;
+
+      unlockUtterance.onEnd.listen((_) {
+        _processVoiceQueue();
+      });
+
+      unlockUtterance.onError.listen((_) {
+        _processVoiceQueue();
+      });
+
+      synthesis.speak(unlockUtterance);
+    } catch (_) {
+      _processVoiceQueue();
+    }
+  }
+
   void _toggleVoice() {
     setState(() {
       _voiceEnabled = !_voiceEnabled;
@@ -1765,7 +1798,9 @@ class _MonitoringPageState extends State<MonitoringPage> {
       _stopBrowserSpeech();
       _speaking = false;
     } else {
-      _processVoiceQueue();
+      // The button tap itself is a trusted mobile user gesture. Use it to
+      // unlock the browser SpeechSynthesis engine before processing events.
+      _unlockMobileSpeech();
     }
   }
 
