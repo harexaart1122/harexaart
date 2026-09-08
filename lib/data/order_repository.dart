@@ -260,10 +260,26 @@ class OrderRepository {
   }
 
   static String _safeStorageFileName(String fileName) {
-    return fileName
-        .replaceAll('\\', '_')
-        .replaceAll('/', '_')
-        .replaceAll(' ', '_');
+    final extension = _storageExtension(fileName);
+
+    // Jangan gunakan nama file asli sebagai object key Storage.
+    // Beberapa browser/device dapat menghasilkan nama file dengan
+    // karakter yang ditolak Supabase Storage (contoh: "~").
+    // Nama asli tetap disimpan di kolom database.
+    return 'file_${DateTime.now().microsecondsSinceEpoch}$extension';
+  }
+
+  static String _storageExtension(String fileName) {
+    final lower = fileName.toLowerCase();
+
+    if (lower.endsWith('.png')) return '.png';
+    if (lower.endsWith('.webp')) return '.webp';
+    if (lower.endsWith('.gif')) return '.gif';
+    if (lower.endsWith('.bmp')) return '.bmp';
+    if (lower.endsWith('.svg')) return '.svg';
+    if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return '.jpg';
+
+    return '.jpg';
   }
 
   static String _imageContentType(String fileName) {
