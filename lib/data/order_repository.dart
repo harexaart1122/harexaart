@@ -272,6 +272,7 @@ class OrderRepository {
   static String _storageExtension(String fileName) {
     final lower = fileName.toLowerCase();
 
+    if (lower.endsWith('.pdf')) return '.pdf';
     if (lower.endsWith('.png')) return '.png';
     if (lower.endsWith('.webp')) return '.webp';
     if (lower.endsWith('.gif')) return '.gif';
@@ -925,3 +926,4 @@ class OrderDataMapper {
     );
   }
 }
+
